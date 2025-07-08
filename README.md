@@ -31,6 +31,9 @@ Thermsolve makes it easy to retrieve temperature-dependent properties of common 
 - [ ] Include citation metadata for each property source (e.g., NIST, DIPPR)
 - [ ] Export properties to JSON, LaTeX, and human-readable tables
 
+## Future
+- [ ] API for fetching data
+
 ## Example
 
 ```python
