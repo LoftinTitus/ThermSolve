@@ -8,6 +8,17 @@ from pathlib import Path
 import warnings
 
 try:
+    from .interpolation import PropertyInterpolator
+    HAS_INTERPOLATION = True
+except ImportError:
+    try:
+        from interpolation import PropertyInterpolator
+        HAS_INTERPOLATION = True
+    except ImportError:
+        HAS_INTERPOLATION = False
+        warnings.warn("Interpolation module not available. Some features will be disabled.")
+
+try:
     import pint
     ureg = pint.UnitRegistry()
     HAS_PINT = True
@@ -96,7 +107,7 @@ class Substance:
         if self.cp_coefficients is None:
             raise ValueError(f"Heat capacity data not available for {self.name}")
         
-        # Example: polynomial correlation Cp = A + B*T + C*T^2 + D*T^3
+        # Handle different coefficient types
         if isinstance(self.cp_coefficients, dict):
             if self.cp_coefficients.get('type') == 'polynomial':
                 coeffs = self.cp_coefficients['coefficients']
@@ -104,6 +115,9 @@ class Substance:
                 return cp
             elif self.cp_coefficients.get('type') == 'constant':
                 return self.cp_coefficients['value']
+            elif self.cp_coefficients.get('type') == 'interpolated' and HAS_INTERPOLATION:
+                interpolator = self.cp_coefficients['interpolator']
+                return interpolator(T)
         
         return None
     
@@ -128,13 +142,16 @@ class Substance:
         if self.viscosity_coefficients is None:
             raise ValueError(f"Viscosity data not available for {self.name}")
         
-        # Example: Arrhenius-type equation μ = A * exp(B/T)
+        # Handle different coefficient types
         if isinstance(self.viscosity_coefficients, dict):
             if self.viscosity_coefficients.get('type') == 'arrhenius':
                 A = self.viscosity_coefficients['A']
                 B = self.viscosity_coefficients['B']
                 return A * (T ** self.viscosity_coefficients.get('n', 0)) * \
                        (1 + self.viscosity_coefficients.get('C', 0) / T)
+            elif self.viscosity_coefficients.get('type') == 'interpolated' and HAS_INTERPOLATION:
+                interpolator = self.viscosity_coefficients['interpolator']
+                return interpolator(T)
         
         return None
     
@@ -159,7 +176,7 @@ class Substance:
         if self.density_coefficients is None:
             raise ValueError(f"Density data not available for {self.name}")
         
-        # Example: linear temperature dependence ρ = A + B*T
+        # Handle different coefficient types
         if isinstance(self.density_coefficients, dict):
             if self.density_coefficients.get('type') == 'linear':
                 A = self.density_coefficients['A']
@@ -167,6 +184,9 @@ class Substance:
                 return A + B * T
             elif self.density_coefficients.get('type') == 'constant':
                 return self.density_coefficients['value']
+            elif self.density_coefficients.get('type') == 'interpolated' and HAS_INTERPOLATION:
+                interpolator = self.density_coefficients['interpolator']
+                return interpolator(T)
         
         return None
     
