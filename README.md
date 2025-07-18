@@ -13,8 +13,6 @@ Thermsolve makes it easy to retrieve temperature-dependent properties of common 
 - Fully unit-aware (using Pint)
 - Built-in and user-defined property database (JSON/CSV)
 - Range warnings when extrapolating properties
-- CLI or API access to properties
-- Compatible with ReactorPy and simulation libraries
 
 ---
 
@@ -37,7 +35,7 @@ Thermsolve makes it easy to retrieve temperature-dependent properties of common 
 ## Example
 
 ```python
-from thermoprops import Substance
+from thermsolve import Substance
 
 ethanol = Substance("ethanol")
 cp = ethanol.cp(T=300)       # Specific heat [J/kg-K]
