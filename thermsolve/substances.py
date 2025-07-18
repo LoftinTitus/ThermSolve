@@ -72,23 +72,29 @@ class Substance:
         # Temperature-dependent properties (stored as coefficients or data points)
         self.cp_coefficients = kwargs.get('cp_coefficients', None)  # Heat capacity
         # Support legacy or alternate keys for heat capacity
-        if self.cp_coefficients is None:
-            # If cp_coefficients is a number, treat as constant
+        if self.cp_coefficients is not None and isinstance(self.cp_coefficients, (int, float)):
+            self.cp_coefficients = {
+                'type': 'constant',
+                'value': self.cp_coefficients,
+                'units': 'J/kg/K'
+            }
+        elif self.cp_coefficients is None:
             if 'cp_constant' in kwargs:
                 self.cp_coefficients = {
                     'type': 'constant',
                     'value': kwargs['cp_constant'],
                     'units': kwargs.get('cp_units', 'J/kg/K')
                 }
-            # If cp_coefficients is a number (from CSV), treat as constant
-            elif 'cp_coefficients' in kwargs and isinstance(kwargs['cp_coefficients'], (int, float)):
-                self.cp_coefficients = {
-                    'type': 'constant',
-                    'value': kwargs['cp_coefficients'],
-                    'units': 'J/kg/K'
-                }
         self.viscosity_coefficients = kwargs.get('viscosity_coefficients', None)
+        
+        # Density: support alternate key 'density_at_20C' from CSV
         self.density_coefficients = kwargs.get('density_coefficients', None)
+        if self.density_coefficients is None and 'density_at_20C' in kwargs:
+            self.density_coefficients = {
+                'type': 'constant',
+                'value': kwargs['density_at_20C'],
+                'units': 'kg/m^3'
+            }
         self.vapor_pressure_coefficients = kwargs.get('vapor_pressure_coefficients', None)
         self.thermal_conductivity_coefficients = kwargs.get('thermal_conductivity_coefficients', None)
         
@@ -168,6 +174,10 @@ class Substance:
             elif self.viscosity_coefficients.get('type') == 'interpolated' and HAS_INTERPOLATION:
                 interpolator = self.viscosity_coefficients['interpolator']
                 return interpolator(T)
+        
+        # If it's a float (from CSV), treat as constant
+        if isinstance(self.viscosity_coefficients, (int, float)):
+            return self.viscosity_coefficients
         
         return None
     
@@ -402,10 +412,17 @@ class SubstanceDatabase:
                 # Convert string values to appropriate types
                 for key, value in row.items():
                     if value and value != '':
-                        try:
-                            row[key] = float(value)
-                        except ValueError:
-                            pass  # Keep as string
+                        # Special handling for cp_coefficients
+                        if key == 'cp_coefficients':
+                            try:
+                                row[key] = float(value)
+                            except ValueError:
+                                pass
+                        else:
+                            try:
+                                row[key] = float(value)
+                            except ValueError:
+                                pass  # Keep as string
                 
                 substance = Substance.from_dict(row)
                 self.add_substance(substance)
