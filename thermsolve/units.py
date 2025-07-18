@@ -62,7 +62,8 @@ class ThermodynamicUnits:
             'molar_mass': 'kg/mol',
             'concentration': 'mol/m^3',
             'mass_fraction': 'dimensionless',
-            'mole_fraction': 'dimensionless'
+            'mole_fraction': 'dimensionless',
+            'dimensionless': 'dimensionless'
         }
         
         # Common alternative units for each property
@@ -187,6 +188,9 @@ class ThermodynamicUnits:
         Returns:
             Value converted to standard units
         """
+        if property_type == 'dimensionless' or unit == 'dimensionless':
+            return value
+        
         standard_unit = self.get_standard_unit(property_type)
         return self.convert(value, unit, standard_unit)
     
