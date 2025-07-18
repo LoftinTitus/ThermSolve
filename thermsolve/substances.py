@@ -71,6 +71,22 @@ class Substance:
         
         # Temperature-dependent properties (stored as coefficients or data points)
         self.cp_coefficients = kwargs.get('cp_coefficients', None)  # Heat capacity
+        # Support legacy or alternate keys for heat capacity
+        if self.cp_coefficients is None:
+            # If cp_coefficients is a number, treat as constant
+            if 'cp_constant' in kwargs:
+                self.cp_coefficients = {
+                    'type': 'constant',
+                    'value': kwargs['cp_constant'],
+                    'units': kwargs.get('cp_units', 'J/kg/K')
+                }
+            # If cp_coefficients is a number (from CSV), treat as constant
+            elif 'cp_coefficients' in kwargs and isinstance(kwargs['cp_coefficients'], (int, float)):
+                self.cp_coefficients = {
+                    'type': 'constant',
+                    'value': kwargs['cp_coefficients'],
+                    'units': 'J/kg/K'
+                }
         self.viscosity_coefficients = kwargs.get('viscosity_coefficients', None)
         self.density_coefficients = kwargs.get('density_coefficients', None)
         self.vapor_pressure_coefficients = kwargs.get('vapor_pressure_coefficients', None)

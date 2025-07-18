@@ -1,4 +1,4 @@
-name,formula,molecular_weight,cas_number,melting_point,boiling_point,critical_temperature,critical_pressure,density_at_20C,cp_constant,data_sources
+name,formula,molecular_weight,cas_number,melting_point,boiling_point,critical_temperature,critical_pressure,density_at_20C,cp_coefficients,data_sources
 water,H2O,18.015,7732-18-5,273.15,373.15,647.1,22064000,997.0,4184,NIST
 ethanol,C2H6O,46.068,64-17-5,159.05,351.44,514.0,6137000,789.0,2440,NIST
 methane,CH4,16.043,74-82-8,90.7,111.66,190.56,4599000,422.6,2220,NIST
